@@ -748,42 +748,40 @@ def fromfile(fd, dtype=None, shape=None, offset=0, formats=None,
     elif isinstance(shape, (int, long)):
         shape = (shape,)
 
-    name = 0
     if isinstance(fd, str):
-        name = 1
         fd = open(fd, 'rb')
-    if (offset > 0):
-        fd.seek(offset, 1)
-    size = get_remaining_size(fd)
 
-    if dtype is not None:
-        descr = sb.dtype(dtype)
-    else:
-        descr = format_parser(formats, names, titles, aligned, byteorder)._descr
+    with fd as f:
+        if (offset > 0):
+            fd.seek(offset, 1)
+        size = get_remaining_size(fd)
 
-    itemsize = descr.itemsize
+        if dtype is not None:
+            descr = sb.dtype(dtype)
+        else:
+            descr = format_parser(formats, names, titles, aligned, byteorder)._descr
 
-    shapeprod = sb.array(shape).prod()
-    shapesize = shapeprod * itemsize
-    if shapesize < 0:
-        shape = list(shape)
-        shape[shape.index(-1)] = size / -shapesize
-        shape = tuple(shape)
+        itemsize = descr.itemsize
+
         shapeprod = sb.array(shape).prod()
+        shapesize = shapeprod * itemsize
+        if shapesize < 0:
+            shape = list(shape)
+            shape[shape.index(-1)] = size / -shapesize
+            shape = tuple(shape)
+            shapeprod = sb.array(shape).prod()
 
-    nbytes = shapeprod * itemsize
+        nbytes = shapeprod * itemsize
 
-    if nbytes > size:
-        raise ValueError(
-                "Not enough bytes left in file for specified shape and type")
+        if nbytes > size:
+            raise ValueError(
+                    "Not enough bytes left in file for specified shape and type")
 
-    # create the array
-    _array = recarray(shape, descr)
-    nbytesread = fd.readinto(_array.data)
-    if nbytesread != nbytes:
-        raise IOError("Didn't read as many bytes as expected")
-    if name:
-        fd.close()
+        # create the array
+        _array = recarray(shape, descr)
+        nbytesread = fd.readinto(_array.data)
+        if nbytesread != nbytes:
+            raise IOError("Didn't read as many bytes as expected")
 
     return _array
 
