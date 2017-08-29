@@ -192,17 +192,17 @@ def prepare_nsis_script(pyver, numver):
         os.makedirs(SUPERPACK_BUILD)
 
     tpl = os.path.join('tools/win32build/nsis_scripts', 'numpy-superinstaller.nsi.in')
-    source = open(tpl, 'r')
-    target = open(os.path.join(SUPERPACK_BUILD, 'numpy-superinstaller.nsi'), 'w')
 
     installer_name = superpack_name(pyver, numver)
-    cnt = "".join(source.readlines())
+    with open(tpl, 'r') as source:
+        cnt = "".join(source.readlines())
     cnt = cnt.replace('@NUMPY_INSTALLER_NAME@', installer_name)
     for arch in ['nosse', 'sse2', 'sse3']:
         cnt = cnt.replace('@%s_BINARY@' % arch.upper(),
                           internal_wininst_name(arch))
 
-    target.write(cnt)
+    with open(os.path.join(SUPERPACK_BUILD, 'numpy-superinstaller.nsi'), 'w') as target:
+        target.write(cnt)
 
 def bdist_wininst_arch(pyver, arch):
     """Arch specific wininst build."""
