@@ -212,15 +212,14 @@ def get_mathlibs(path=None):
             raise DistutilsError('_numpyconfig.h not found in numpy include '
                 'dirs %r' % (dirs,))
 
-    fid = open(config_file)
     mathlibs = []
     s = '#define MATHLIB'
-    for line in fid:
-        if line.startswith(s):
-            value = line[len(s):].strip()
-            if value:
-                mathlibs.extend(value.split(','))
-    fid.close()
+    with open(config_file) as fid:
+        for line in fid:
+            if line.startswith(s):
+                value = line[len(s):].strip()
+                if value:
+                    mathlibs.extend(value.split(','))
     return mathlibs
 
 def minrelpath(path):
