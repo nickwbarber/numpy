@@ -395,27 +395,27 @@ def load(file, mmap_mode=None, allow_pickle=True, fix_imports=True,
         # Nothing to do on Python 2
         pickle_kwargs = {}
 
-    try:
+    with fid as f:
         # Code to distinguish from NumPy binary files and pickles.
         _ZIP_PREFIX = b'PK\x03\x04'
         N = len(format.MAGIC_PREFIX)
-        magic = fid.read(N)
+        magic = f.read(N)
         # If the file size is less than N, we need to make sure not
         # to seek past the beginning of the file
-        fid.seek(-min(N, len(magic)), 1)  # back-up
+        f.seek(-min(N, len(magic)), 1)  # back-up
         if magic.startswith(_ZIP_PREFIX):
             # zip-file (assume .npz)
             # Transfer file ownership to NpzFile
             tmp = own_fid
             own_fid = False
-            return NpzFile(fid, own_fid=tmp, allow_pickle=allow_pickle,
+            return NpzFile(f, own_fid=tmp, allow_pickle=allow_pickle,
                            pickle_kwargs=pickle_kwargs)
         elif magic == format.MAGIC_PREFIX:
             # .npy file
             if mmap_mode:
                 return format.open_memmap(file, mode=mmap_mode)
             else:
-                return format.read_array(fid, allow_pickle=allow_pickle,
+                return format.read_array(f, allow_pickle=allow_pickle,
                                          pickle_kwargs=pickle_kwargs)
         else:
             # Try a pickle
@@ -423,13 +423,10 @@ def load(file, mmap_mode=None, allow_pickle=True, fix_imports=True,
                 raise ValueError("allow_pickle=False, but file does not contain "
                                  "non-pickled data")
             try:
-                return pickle.load(fid, **pickle_kwargs)
+                return pickle.load(f, **pickle_kwargs)
             except Exception:
                 raise IOError(
                     "Failed to interpret file %s as a pickle" % repr(file))
-    finally:
-        if own_fid:
-            fid.close()
 
 
 def save(file, arr, allow_pickle=True, fix_imports=True):
@@ -503,13 +500,10 @@ def save(file, arr, allow_pickle=True, fix_imports=True):
         # Nothing to do on Python 2
         pickle_kwargs = None
 
-    try:
+    with fid as f:
         arr = np.asanyarray(arr)
-        format.write_array(fid, arr, allow_pickle=allow_pickle,
+        format.write_array(f, arr, allow_pickle=allow_pickle,
                            pickle_kwargs=pickle_kwargs)
-    finally:
-        if own_fid:
-            fid.close()
 
 
 def savez(file, *args, **kwds):
