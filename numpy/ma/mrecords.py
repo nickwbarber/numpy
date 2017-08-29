@@ -683,6 +683,7 @@ def openfile(fname):
     try:
         f = open(fname)
     except IOError:
+        f.close()
         raise IOError("No such file: '%s'" % fname)
     if f.readline()[:2] != "\\x":
         f.seek(0, 0)
@@ -717,23 +718,22 @@ def fromtextfile(fname, delimitor=None, commentchar='#', missingchar='',
 
     Ultra simple: the varnames are in the header, one line"""
     # Try to open the file.
-    ftext = openfile(fname)
+    with openfile(fname) as ftext:
 
-    # Get the first non-empty line as the varnames
-    while True:
-        line = ftext.readline()
-        firstline = line[:line.find(commentchar)].strip()
-        _varnames = firstline.split(delimitor)
-        if len(_varnames) > 1:
-            break
-    if varnames is None:
-        varnames = _varnames
+        # Get the first non-empty line as the varnames
+        while True:
+            line = ftext.readline()
+            firstline = line[:line.find(commentchar)].strip()
+            _varnames = firstline.split(delimitor)
+            if len(_varnames) > 1:
+                break
+        if varnames is None:
+            varnames = _varnames
 
-    # Get the data.
-    _variables = masked_array([line.strip().split(delimitor) for line in ftext
-                               if line[0] != commentchar and len(line) > 1])
-    (_, nfields) = _variables.shape
-    ftext.close()
+        # Get the data.
+        _variables = masked_array([line.strip().split(delimitor) for line in ftext
+                                   if line[0] != commentchar and len(line) > 1])
+        (_, nfields) = _variables.shape
 
     # Try to guess the dtype.
     if vartypes is None:
