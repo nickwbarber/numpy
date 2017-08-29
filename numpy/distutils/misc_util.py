@@ -1844,9 +1844,8 @@ class Configuration(object):
         else:
             entries = njoin(path, '.svn', 'entries')
         if os.path.isfile(entries):
-            f = open(entries)
-            fstr = f.read()
-            f.close()
+            with open(entries) as f:
+                fstr = f.read()
             if fstr[:5] == '<?xml':  # pre 1.4
                 m = re.search(r'revision="(?P<revision>\d+)"', fstr)
                 if m:
