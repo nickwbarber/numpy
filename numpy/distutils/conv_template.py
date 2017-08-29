@@ -322,15 +322,23 @@ if __name__ == "__main__":
         fid = sys.stdin
         outfile = sys.stdout
     else:
-        fid = open(file, 'r')
+        try:
+            fid = open(file, 'r')
+        except:
+            fid.close()
         (base, ext) = os.path.splitext(file)
         newname = base
-        outfile = open(newname, 'w')
+        try:
+            outfile = open(newname, 'w')
+        except:
+            outfile.close()
 
-    allstr = fid.read()
-    try:
-        writestr = process_str(allstr)
-    except ValueError:
-        e = get_exception()
-        raise ValueError("In %s loop at %s" % (file, e))
-    outfile.write(writestr)
+    with fid as f:
+        allstr = f.read()
+        try:
+            writestr = process_str(allstr)
+        except ValueError:
+            e = get_exception()
+            raise ValueError("In %s loop at %s" % (file, e))
+    with outfile as of:
+        of.write(writestr)
