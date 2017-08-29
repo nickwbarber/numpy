@@ -114,20 +114,18 @@ class LinuxCPUInfo(CPUInfoBase):
         if ok:
             info[0]['uname_m'] = output.strip()
         try:
-            fo = open('/proc/cpuinfo')
+            with open('/proc/cpuinfo') as fo:
+                for line in fo:
+                    name_value = [s.strip() for s in line.split(':', 1)]
+                    if len(name_value) != 2:
+                        continue
+                    name, value = name_value
+                    if not info or name in info[-1]: # next processor
+                        info.append({})
+                    info[-1][name] = value
         except EnvironmentError:
             e = get_exception()
             warnings.warn(str(e), UserWarning, stacklevel=2)
-        else:
-            for line in fo:
-                name_value = [s.strip() for s in line.split(':', 1)]
-                if len(name_value) != 2:
-                    continue
-                name, value = name_value
-                if not info or name in info[-1]: # next processor
-                    info.append({})
-                info[-1][name] = value
-            fo.close()
         self.__class__.info = info
 
     def _not_impl(self): pass
