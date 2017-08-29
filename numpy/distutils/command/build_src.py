@@ -427,9 +427,8 @@ class build_src(build_ext.build_ext):
                     else:
                         log.info("conv_template:> %s" % (target_file))
                         outstr = process_c_file(source)
-                    fid = open(target_file, 'w')
-                    fid.write(outstr)
-                    fid.close()
+                    with open(target_file, 'w') as fid:
+                        fid.write(outstr)
                 if _header_ext_match(target_file):
                     d = os.path.dirname(target_file)
                     if d not in include_dirs:
