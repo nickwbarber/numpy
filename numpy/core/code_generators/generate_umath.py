@@ -1062,7 +1062,6 @@ InitOperators(PyObject *dictionary) {
 
 if __name__ == "__main__":
     filename = __file__
-    fid = open('__umath_generated.c', 'w')
-    code = make_code(defdict, filename)
-    fid.write(code)
-    fid.close()
+    with open('__umath_generated.c', 'w') as fid:
+        code = make_code(defdict, filename)
+        fid.write(code)
