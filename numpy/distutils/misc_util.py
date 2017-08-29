@@ -1993,9 +1993,8 @@ class Configuration(object):
                 if not os.path.isfile(target):
                     version = str(revision)
                     self.info('Creating %s (version=%r)' % (target, version))
-                    f = open(target, 'w')
-                    f.write('version = %r\n' % (version))
-                    f.close()
+                    with open(target, 'w') as f:
+                        f.write('version = %r\n' % (version))
 
                 import atexit
                 def rm_file(f=target,p=self.info):
