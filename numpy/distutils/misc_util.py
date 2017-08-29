@@ -1880,9 +1880,8 @@ class Configuration(object):
 
         if os.path.isfile(branch_fn):
             branch0 = None
-            f = open(branch_fn)
-            revision0 = f.read().strip()
-            f.close()
+            with open(branch_fn) as f:
+                revision0 = f.read().strip()
 
             branch_map = {}
             for line in file(branch_cache_fn, 'r'):
